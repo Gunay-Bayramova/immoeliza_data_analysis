@@ -10,7 +10,6 @@ df = pd.read_csv("./Raw/PropertyData.csv", index_col=0)
 df["street"] = df["street"].str.lower()
 
 # 2. fix types
-df[~df["livable_surface"].isna()]["livable_surface"].astype(int)
 
 # --- CATEGORICAL ---
 cat_cols = ['transaction_type', 'province', 'property_type', 
@@ -35,16 +34,15 @@ float_cols = ['latitude', 'longitude']
 for col in float_cols:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
-# --- DATE ---
-#df['availability'] = pd.to_datetime(df['availability'], errors='coerce')
-
 # --- STRING ---
 str_cols = ['street']
 for col in str_cols:
-    df[col] = df[col].astype('string')
+    df[col] = df[col].astype('string').str.strip().str.replace(r"\s+", " ", regex=True)
 
 # 3. fix longitude/latitude that are swapped
-
+swapped = df["longitude"] > 10
+long_lat = df[swapped][["longitude","latitude"]].copy()
+df.loc[swapped,["longitude","latitude"]] = long_lat[["latitude","longitude"]].values
 
 # 4. remove data with values out of bounds
 # price
