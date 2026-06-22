@@ -11,7 +11,6 @@ df["street"] = df["street"].str.lower()
 # 2. fix types
 df[~df["livable_surface"].isna()]["livable_surface"].astype(int)
 
-# 3. fix longitude/latitude that are swapped
 # --- CATEGORICAL ---
 cat_cols = ['transaction_type', 'province', 'property_type', 
             'property_subtype', 'property_condition']
@@ -43,6 +42,7 @@ str_cols = ['street']
 for col in str_cols:
     df[col] = df[col].astype('string')
 
+# 3. fix longitude/latitude that are swapped
 
 
 # 4. remove data with values out of bounds
