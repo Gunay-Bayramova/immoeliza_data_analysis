@@ -45,13 +45,28 @@ long_lat = df[swapped][["longitude","latitude"]].copy()
 df.loc[swapped,["longitude","latitude"]] = long_lat[["latitude","longitude"]].values
 
 # 4. remove data with values out of bounds
+def removeDataOutOfBounds(df, column : str, min_val, max_val):
+    rows = df[~df[column].between(min_val, max_val)]
+    nbRows = len(df)
+    df.drop(rows.index, inplace = True)
+    print(f"Removed {nbRows-len(df)} rows where {column} is smaller than {min_val} or bigger than {max_val}.")
+    print(rows[column])
+
 # price
+removeDataOutOfBounds(df[df["transaction_type"]=="Rent"], "price", 100, 15000)
+removeDataOutOfBounds(df[df["transaction_type"]=="Sale"], "price", 1000, 10000000)
 # livable_surface
-# terrasse
+removeDataOutOfBounds(df, "livable_surface", 5, 2000)
+# terrace
+removeDataOutOfBounds(df, "terrace", 1, 1000)
 # garage
+removeDataOutOfBounds(df, "garage", 0, 10)
 # land_surface
+removeDataOutOfBounds(df, "land_surface", 4, 100000)
 # energy_consumption
+removeDataOutOfBounds(df, "energy_consumption", 1000, 1000000)
 # garden
+removeDataOutOfBounds(df, "garden", 1, 100000)
 
 # 5. remove duplicates
 
