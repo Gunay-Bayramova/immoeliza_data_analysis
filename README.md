@@ -126,14 +126,13 @@ pip install pandas numpy matplotlib seaborn jupyter
 ## ▶️ Usage
 
 ```bash
-# (Optional) regenerate the cleaned datasets from the raw file
-python Data/cleanData.py
 
-# Open the analysis notebook and run all cells
-jupyter notebook Analysis/soo_notebook.ipynb
+# Run the visualization generating script 
+python Images/main.py
+
 ```
 
-The cleaned datasets are already provided in `Data/Clean/`, so you can open the notebook and explore straight away. The final, non-technical story is in the presentation in `Reports/`.
+Execute main.py inside `Images/` to generate insightful visualizations from the processed datasets. The final, non-technical story is available in the presentation in `Reports/`.
 
 ---
 
