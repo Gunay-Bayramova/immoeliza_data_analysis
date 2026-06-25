@@ -2105,7 +2105,6 @@ longitude,latitude,transaction_type,price,property_type,property_subtype,seller_
 3.8383261,50.4048263,Rent,3250,House,House,39432,7340,1995,Normal,301,7,2,True,200,True,Immediately,Hainaut,,,,2349,94712,1600,,
 4.2721491,50.5285674,Rent,950,Appartment,Flat,27776,7180,,,92,2,1,,18,,From 01/07/2026,Hainaut,,,,,,22,,
 4.53892017,50.424677,Rent,850,Appartment,Flat,28892,6560,,,116,3,,False,,False,Immediately,Hainaut,rue albert,1,,,,,,
-3.8498337,50.5841435,Rent,1,Appartment,Duplex,0,7940,,Excellent,82,1,1,,,,,Hainaut,chaussée de mons,10,,,,,,
 4.3247655,50.4308424,Rent,515,Appartment,FlatStudio,40288,6141,,Normal,40,1,1,False,,False,,Hainaut,rue emile vandervelde,195,,,24855,,,False
 4.4737,50.3747,Rent,1175,Appartment,Flat,44706,6280,2025,Normal,127,2,1,True,,False,Immediately,Hainaut,,,1,,,,,
 3.7827922,50.4000125,Rent,1400,House,House,33493,7370,,Normal,,4,2,,,False,Immediately,Hainaut,,,,,67126,,,
@@ -3313,7 +3312,6 @@ longitude,latitude,transaction_type,price,property_type,property_subtype,seller_
 3.17622,51.20254,Rent,780,Appartment,Flat,42893,8200,,Normal,75,2,1,False,,False,Immediately,West vlaanderen,pastoriestraat,135,,,,,True,False
 3.2073011,51.0960341,Rent,790,Appartment,Flat,30734,8020,2004,,72,2,1,True,,,Immediately,West vlaanderen,vlamingstraat,1,1,,,,False,
 3.29701,51.35467,Rent,1950,Appartment,Flat,28942,8300,,,85,2,1,True,,True,,West vlaanderen,rue antoine bréartstraat,10,,,,,,
-3.2121681,51.1853841,Rent,59,House,House,39984,8200,2024,New,,,,,,,,West vlaanderen,ten boomgaard,26,,,,,,
 3.2451867,51.2002854,Rent,895,Appartment,Flat,43088,8310,,Normal,90,2,1,,,,Immediately,West vlaanderen,gulden-peerdenstraat,15,,,,,,
 3.2368131,51.1534484,Rent,775,Appartment,Flat,30734,8020,2007,,64,1,1,True,,,Immediately,West vlaanderen,schooldreef,21,1,,,,False,
 2.9890379,51.2557778,Rent,535,Appartment,FlatStudio,32529,8450,,,26,,1,,,,,West vlaanderen,kapelstraat,303,,,,,,
