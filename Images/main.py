@@ -189,8 +189,8 @@ plt.tight_layout()
 plt.savefig('box_sales.jpg')
 plt.close()
 
-
 ### Graph 6 : Map for sales in Belgium
+
 df_map = dfs[
     dfs["latitude"].between(49.4, 51.6) &
     dfs["longitude"].between(2.5, 6.5)
@@ -314,6 +314,31 @@ for spine in ax.spines.values():
 
 plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.tight_layout()
-plt.savefig("map for sales in Belium.jpg", dpi=300)
-print(province_stats.sort_values("median_price", ascending=False)[["province", "median_price", "n"]])
+plt.savefig("map_for_sales_in_Belgium.jpg", dpi=300)
+plt.close()
 
+### Graph 7 : Gross Rental Yield
+
+dfs_cor = dfs[["price","province","livable_surface"]].dropna(how='any')
+dfs_cor["price_surf"] = dfs_cor["price"]/dfs_cor["livable_surface"]
+dfs_per_prov = dfs_cor.groupby("province")["price_surf"].agg(["mean","median"])
+dfr_cor = dfr[["price","province","livable_surface"]].dropna(how='any')
+dfr_cor["price_surf"] = dfr_cor["price"]/dfr_cor["livable_surface"]
+dfr_per_prov = dfr_cor.groupby("province")["price_surf"].agg(["mean","median"])
+
+dfgry = dfs_per_prov.merge(dfr_per_prov,on="province",how="inner",suffixes=["_s","_r"])
+dfgry["gry"] = dfgry["median_r"]*12/dfgry["median_s"]*100
+dfgry = dfgry.sort_values("gry",ascending=True)
+print(dfgry.head(11))
+
+bars = plt.barh(dfgry.index, dfgry['gry'],
+                   capsize=4,
+                   color=BLUE, alpha=0.8, edgecolor='white')
+overall_rate = dfgry['gry'].median()
+plt.axvline(overall_rate, color=ORANGE, lw=2, ls='--',
+                label=f"Country avg : {overall_rate:.02f}")
+plt.title('Gross rental yield per province')
+plt.legend()
+plt.tight_layout()
+plt.savefig("gross_rental_yield.jpg")
+plt.close()
