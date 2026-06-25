@@ -5,7 +5,14 @@ import matplotlib.ticker as mticker
 import seaborn as sns
 import scipy.stats as stats
 import warnings
+from matplotlib.patches import Circle
+import matplotlib.patheffects as pe
+from pyproj import Transformer
+import contextily as cx
+
 warnings.filterwarnings('ignore')
+
+
 
 # ── Shared style ─────────────────────────────────────────────────────────────
 sns.set_theme(style='whitegrid', palette='muted', font_scale=1.1)
@@ -181,4 +188,132 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig('box_sales.jpg')
 plt.close()
+
+
+### Graph 6 : Map for sales in Belgium
+df_map = dfs[
+    dfs["latitude"].between(49.4, 51.6) &
+    dfs["longitude"].between(2.5, 6.5)
+].copy()
+
+to_mercator = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
+df_map["x"], df_map["y"] = to_mercator.transform(
+    df_map["longitude"].values, df_map["latitude"].values
+)
+
+province_stats = (
+    df_map.groupby("province")
+    .agg(median_price=("price", "median"), x=("x", "mean"), y=("y", "mean"), n=("price", "size"))
+    .reset_index()
+)
+
+x_range = df_map["x"].max() - df_map["x"].min()
+RADIUS_MIN, RADIUS_MAX = x_range * 0.018, x_range * 0.060
+pmin, pmax = province_stats["median_price"].min(), province_stats["median_price"].max()
+t = (province_stats["median_price"] - pmin) / (pmax - pmin)
+province_stats["radius"] = np.sqrt(RADIUS_MIN**2 + t * (RADIUS_MAX**2 - RADIUS_MIN**2))
+
+anchors = province_stats[["x", "y"]].to_numpy().astype(float)
+radii = province_stats["radius"].to_numpy()
+positions = anchors.copy()
+pad = x_range * 0.006
+spring = 0.018
+
+for _ in range(800):
+    moved = False
+    for i in range(len(positions)):
+        for j in range(i + 1, len(positions)):
+            dx, dy = positions[j, 0] - positions[i, 0], positions[j, 1] - positions[i, 1]
+            dist = np.hypot(dx, dy)
+            min_dist = radii[i] + radii[j] + pad
+            if dist < min_dist:
+                if dist < 1e-6:
+                    dx, dy = np.random.uniform(-1, 1, 2)
+                    dist = np.hypot(dx, dy)
+                push = (min_dist - dist) / 2
+                ux, uy = dx / dist, dy / dist
+                positions[i] -= [ux * push, uy * push]
+                positions[j] += [ux * push, uy * push]
+                moved = True
+    positions += (anchors - positions) * spring
+    if not moved:
+        break
+
+for _ in range(300):
+    moved = False
+    for i in range(len(positions)):
+        for j in range(i + 1, len(positions)):
+            dx, dy = positions[j, 0] - positions[i, 0], positions[j, 1] - positions[i, 1]
+            dist = np.hypot(dx, dy)
+            min_dist = radii[i] + radii[j] + pad
+            if dist < min_dist:
+                if dist < 1e-6:
+                    dx, dy = np.random.uniform(-1, 1, 2)
+                    dist = np.hypot(dx, dy)
+                push = (min_dist - dist) / 2
+                ux, uy = dx / dist, dy / dist
+                positions[i] -= [ux * push, uy * push]
+                positions[j] += [ux * push, uy * push]
+                moved = True
+    if not moved:
+        break
+
+province_stats["cx_pos"], province_stats["cy_pos"] = positions[:, 0], positions[:, 1]
+province_stats["displaced"] = (
+    np.hypot(positions[:, 0] - anchors[:, 0], positions[:, 1] - anchors[:, 1]) > radii * 0.6
+)
+
+province_stats = province_stats.sort_values("radius", ascending=False).reset_index(drop=True)
+
+plt.rcParams["font.family"] = "DejaVu Sans"
+fig, ax = plt.subplots(figsize=(11, 9), dpi=130)
+fig.patch.set_facecolor("white")
+
+for _, row in province_stats.iterrows():
+    if row["displaced"]:
+        ax.plot([row["x"], row["cx_pos"]], [row["y"], row["cy_pos"]],
+                color="#1d3557", linewidth=0.9, alpha=0.6, zorder=3)
+        ax.scatter([row["x"]], [row["y"]], s=16, color="#1d3557", zorder=3)
+
+shift = x_range * 0.0025
+for i, row in province_stats.iterrows():
+    z = 4 + i * 0.01
+    ax.add_patch(Circle((row["cx_pos"] + shift, row["cy_pos"] - shift), row["radius"],
+                         facecolor="black", edgecolor="none", alpha=0.10, zorder=z))
+    ax.add_patch(Circle((row["cx_pos"], row["cy_pos"]), row["radius"],
+                         facecolor="#2a4d7a", edgecolor="white", linewidth=1.8,
+                         alpha=0.78, zorder=z + 0.005))
+    ax.annotate(
+        f"{row['province']}\n€{row['median_price']/1e3:.0f}k",
+        (row["cx_pos"], row["cy_pos"]), ha="center", va="center",
+        fontsize=8.3, fontweight="bold", color="white",
+        path_effects=[pe.withStroke(linewidth=2.2, foreground="#1d3557")],
+        zorder=z + 0.01,
+    )
+
+belgium_lons = [2.5, 6.5]
+belgium_lats = [49.4, 51.6]
+bx, by = to_mercator.transform(belgium_lons, belgium_lats)
+
+margin = 0.04  
+x_pad = (bx[1] - bx[0]) * margin
+y_pad = (by[1] - by[0]) * margin
+
+ax.set_xlim(bx[0] - x_pad, bx[1] + x_pad)
+ax.set_ylim(by[0] - y_pad, by[1] + y_pad)
+
+cx.add_basemap(ax, crs="EPSG:3857", source=cx.providers.CartoDB.Positron, zorder=1)
+ax.set_aspect("equal")
+
+fig.suptitle("Belgian Property Prices by Location", fontsize=15, weight="bold",
+             color="#1d3557", y=0.975)
+ax.set_title("Circle size = median price per province", fontsize=9.5, color="#666", pad=12)
+ax.set_xticks([]); ax.set_yticks([])
+for spine in ax.spines.values():
+    spine.set_visible(False)
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])
+plt.tight_layout()
+plt.savefig("map for sales in Belium.jpg", dpi=300)
+print(province_stats.sort_values("median_price", ascending=False)[["province", "median_price", "n"]])
 
